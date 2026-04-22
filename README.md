@@ -1,50 +1,12 @@
-# Welcome to your Expo app 👋
+# 🎮 Aprova+ | A Batalha pelo Conhecimento
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+O **Aprova+** é um aplicativo educacional focado na preparação para o ENEM que transforma a rotina exaustiva de estudos em uma verdadeira jornada de RPG. Desenvolvido com uma arquitetura moderna e design intuitivo, o app engaja o estudante através de um sistema de recompensas contínuo.
 
-## Get started
+Em vez de resolver simulados monótonos, o usuário assume o controle de um Herói e entra em "Portais de Conhecimento" (Matemática, Biologia, História, Português e Química). Cada acerto é um ataque crítico que gera XP e ajuda a subir de nível, enquanto os erros e desistências exigem estratégia e resiliência.
 
-1. Install dependencies
+## 🚀 Destaques do Projeto
+* **Gamificação Imersiva:** Sistema de níveis e evolução integrado diretamente à resolução de questões.
+* **Arquitetura Offline-First:** Construído para funcionar 100% sem internet, salvando todo o progresso localmente para democratizar o acesso aos estudos a qualquer momento.
+* **Motor Anti-Repetição:** Algoritmo inteligente que memoriza as questões já respondidas, garantindo um treinamento eficiente e com novos desafios até que o portal seja completamente zerado.
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+*Projeto desenvolvido como solução tecnológica gamificada para o engajamento estudantil.* ⚔️📚
