@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { obterJogador, questoesENEM, salvarJogador } from './database';
 
 export default function BattleScreen() {
@@ -18,15 +18,29 @@ export default function BattleScreen() {
     { nome: 'Química', icone: '🧪', cor: '#9370DB' },
   ];
 
-  const iniciarCombate = (materia) => {
-    const filtradas = questoesENEM.filter(q => q.disciplina === materia);
-    if (filtradas.length > 0) {
-      const sorteada = filtradas[Math.floor(Math.random() * filtradas.length)];
-      setQuestao(sorteada);
-      setMateriaSelecionada(materia);
-      setTentativas(0);
-      setSelecionada(null);
+  // --- NOVO SISTEMA INTELIGENTE DE SORTEIO ---
+  const iniciarCombate = async (materia) => {
+    const j = await obterJogador();
+    const respondidas = j.questoes_respondidas || []; // Puxa a lista de questões já feitas
+
+    // Filtra as questões que são da matéria E que o enunciado NÃO está na lista de respondidas
+    let filtradas = questoesENEM.filter(q => q.disciplina === materia && !respondidas.includes(q.enunciado));
+
+    // Se o jogador zerou todas as questões daquela matéria, reseta o ciclo para treinamento
+    if (filtradas.length === 0) {
+      if (Platform.OS === 'web') {
+        window.alert(`Portal Zerado! 🏆\nVocê já derrotou todos os inimigos de ${materia}. As missões serão reiniciadas!`);
+      } else {
+        Alert.alert("Portal Zerado! 🏆", `Você já derrotou todos os inimigos de ${materia}. As missões serão reiniciadas para treinamento!`);
+      }
+      filtradas = questoesENEM.filter(q => q.disciplina === materia); // Pega todas de novo
     }
+
+    const sorteada = filtradas[Math.floor(Math.random() * filtradas.length)];
+    setQuestao(sorteada);
+    setMateriaSelecionada(materia);
+    setTentativas(0);
+    setSelecionada(null);
   };
 
   const abrirConfirmacaoFuga = () => {
@@ -63,16 +77,32 @@ export default function BattleScreen() {
 
       const j = await obterJogador();
       let nXp = (j.xp || 0) + xpGanhado;
-      let nNivel = j.nivel;
-      if (nXp >= 1000) { nNivel++; nXp -= 1000; }
+      let nNivel = j.nivel || 1;
+
+      // --- CORREÇÃO DO BUG DO NÍVEL (Agora sobe a cada 500 XP certinho) ---
+      while (nXp >= 500) {
+        nNivel++;
+        nXp -= 500;
+      }
 
       const matKey = questao.disciplina.toLowerCase();
       const nAcertosMat = j.acertosPorMateria || {};
       nAcertosMat[matKey] = (nAcertosMat[matKey] || 0) + 1;
 
+      // --- SALVA A QUESTÃO NA MEMÓRIA PARA NÃO REPETIR ---
+      const respondidas = j.questoes_respondidas || [];
+      if (!respondidas.includes(questao.enunciado)) {
+        respondidas.push(questao.enunciado);
+      }
+
       await salvarJogador({ 
-        ...j, xp: nXp, nivel: nNivel, total_questoes: j.total_questoes + 1, 
-        acertos: j.acertos + 1, acertosPorMateria: nAcertosMat 
+        ...j, 
+        xp: nXp, 
+        nivel: nNivel, 
+        total_questoes: (j.total_questoes || 0) + 1, 
+        acertos: (j.acertos || 0) + 1, 
+        acertosPorMateria: nAcertosMat,
+        questoes_respondidas: respondidas // Atualiza o banco com a nova questão feita
       });
 
       setModal({ visivel: true, titulo: 'VITÓRIA! ⚔️', msg: `Ataque crítico! Você ganhou +${xpGanhado} XP.`, tipo: 'vitoria' });
@@ -134,9 +164,9 @@ export default function BattleScreen() {
           <Text style={styles.btnTxt}>LANÇAR ATAQUE</Text>
         </TouchableOpacity>
 
-        {/* NOVO BOTÃO DE DESISTÊNCIA (SÓLIDO E VERMELHO) */}
         <TouchableOpacity style={styles.btnDesistirCard} onPress={abrirConfirmacaoFuga}>
           <Text style={styles.btnDesistirTxt}>DESISTIR DA BATALHA</Text>
+          <Text style={styles.btnDesistirSub}>− 20 XP</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -205,28 +235,9 @@ const styles = StyleSheet.create({
   circle: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#1E1E2E', alignItems: 'center', justifyContent: 'center', marginRight: 15 },
   btn: { backgroundColor: '#8A2BE2', padding: 18, borderRadius: 15, alignItems: 'center', marginTop: 10 },
   btnTxt: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
-  
-  // ESTILOS ATUALIZADOS DO BOTÃO DE DESISTIR (Igual ao de ataque, mas vermelho)
-  btnDesistirCard: { 
-    marginTop: 15, 
-    backgroundColor: '#FF3333', // Vermelho sólido 
-    padding: 18, // Mesmo padding do botão roxo
-    borderRadius: 15, // Mesmo arredondamento
-    alignItems: 'center', 
-    marginBottom: 40 
-  },
-  btnDesistirTxt: { 
-    color: '#FFF', // Texto branco
-    fontSize: 16, // Mesmo tamanho do "LANÇAR ATAQUE"
-    fontWeight: 'bold' 
-  },
-  btnDesistirSub: { 
-    color: '#FFF', 
-    fontSize: 12, 
-    opacity: 0.9, 
-    marginTop: 2 
-  },
-
+  btnDesistirCard: { marginTop: 15, backgroundColor: '#FF3333', padding: 18, borderRadius: 15, alignItems: 'center', marginBottom: 40 },
+  btnDesistirTxt: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+  btnDesistirSub: { color: '#FFF', fontSize: 12, opacity: 0.9, marginTop: 2 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent: { backgroundColor: '#1E1E2E', width: '100%', padding: 25, borderRadius: 25, borderWidth: 3, alignItems: 'center' },
   modalTitle: { fontSize: 26, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' },
